@@ -1,3 +1,3 @@
-from src.pipefysdk.main import PipefySDK
+from .main import PipefySDK
 
 __all__ = ["PipefySDK"]
