@@ -45,4 +45,7 @@ class HttpClient:
                 self.logger.error(f"Request error occurred: {e}")
                 await asyncio.sleep(self.retry_delay)
                 attempt += 1
-        raise HttpRequestPipefyError(message="Max attempts reached", status_code=500)
+        raise HttpRequestPipefyError(
+            message="Max attempts reached. For more information, visit: https://developers.pipefy.com/reference/status-and-error-handling",
+            status_code=500
+        )
