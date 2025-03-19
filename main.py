@@ -1,4 +1,5 @@
-from typing import Optional, List, Dict
+from typing import Optional
+
 from src.pipefysdk.base_service import BaseService
 from src.pipefysdk.queries.query_cards import GraphQLQueries
 from src.pipefysdk.utils.binary_tree import BinarySearchTree
@@ -9,46 +10,44 @@ from src.pipefysdk.errors.search_field_pipefy_error import SearchFieldPipefyErro
 class PipefySDK(BaseService):
     def __init__(self, token: str, url: str) -> None:
         super().__init__(pipefy_token=token, url=url)
+        self.queries = GraphQLQueries()
 
     def get_card_info(self, card_id: int) -> dict:
         """
         Get card information by card id.
 
-        Args:
-            card_id (int): Define the card id to get the information.
+        args:
+            card_id: Define the card id to get the information.
 
-        Returns:
-            dict: Return the card information.
+        return: Return the card information.
         """
         query = self.queries.search_fields_in_card(card_id=card_id)
         response = self.request(query)
-        return response.get("data", {}).get("card", {})
+        return response.get("data").get("card")
 
     def update_single_card_field(self, card_id: str, field_id: str, new_value: str) -> dict:
         """
         Update a single card field.
 
-        Args:
-            card_id (str): Define the card id to update the field.
-            field_id (str): Define the field id to update.
-            new_value (str): Define the new value to be updated.
+        args:
+            card_id: Define the card id to update the field.
+            field_id: Define the field id to update.
+            new_value: Define the new value to be updated.
 
-        Returns:
-            dict: Return the response of the API.
+        return: Return the response of the API.
         """
         mutation = self.mutations.mutation_update_card_field(card_id, field_id, new_value)
         return self.request(mutation).get("data", {}).get("updateFieldsValues", {})
 
-    def update_multiple_card_fields(self, card_id: str, fields: List[Dict[str, str]]) -> dict:
+    def update_multiple_card_fields(self, card_id: str, fields: list) -> dict:
         """
         Update multiple card fields.
 
-        Args:
-            card_id (str): Define the card id to update the fields.
-            fields (List[Dict[str, str]]): Define the fields to be updated.
+        args:
+            card_id: Define the card id to update the fields.
+            fields: Define the fields to be updated.
 
-        Returns:
-            dict: Return the response of the API.
+        return: Return the response of the API.
         """
         mutation = self.mutations.mutation_update_card_field(card_id, fields=fields)
         return self.request(mutation).get("data", {}).get("updateFieldsValues", {})
@@ -57,20 +56,18 @@ class PipefySDK(BaseService):
         """
         Search a value in a card field.
 
-        Args:
-            card_id (int): Define the card id to search for the value.
-            field_id (str): Define the field id to search for the value.
+        args:
+            card_id: Define the card id to search for the value.
+            field_id: Define the field id to search for the value.
 
-        Returns:
-            Optional[str]: Return the value of the field or None if not found.
+        return: Return the value of the field or None if not found.
         """
         query = self.queries.search_fields_in_card(card_id)
         response = self.request(query)
         try:
             fields = response.get("data", {}).get("card", {}).get("fields", [])
-        except KeyError:
+        except:
             raise SearchFieldPipefyError("Field not found")
-
         bst = BinarySearchTree()
         for field in fields:
             field_key = field.get("field", {}).get("id")
@@ -80,22 +77,21 @@ class PipefySDK(BaseService):
         result_node = bst.search(field_id)
         return result_node.value if result_node else None
 
-    def search_multiple_values_in_fields(self, card_id: int, field_ids: List[str]) -> dict:
+    def search_multiple_values_in_fields(self, card_id: int, field_ids: list) -> dict:
         """
         Search multiple values in card fields.
 
-        Args:
-            card_id (int): Define the card id to search for the values.
-            field_ids (List[str]): Define the fields ids to search for the values.
+        args:
+            card_id: Define the card id to search for the values.
+            field_ids: Define the fields ids to search for the values.
 
-        Returns:
-            dict: Return the values of the fields.
+        return: Return the values of the fields.
         """
         query = self.queries.search_fields_in_card(card_id)
         response = self.request(query)
         try:
             fields = response.get("data", {}).get("card", {}).get("fields", [])
-        except KeyError:
+        except:
             raise SearchFieldPipefyError("Field not found")
 
         bst = BinarySearchTree()
@@ -112,14 +108,14 @@ class PipefySDK(BaseService):
 
     def move_card_to_phase(self, new_phase_id: int, card_id: int) -> dict:
         """
-        Move a card to a new phase.
+            Move a card to a new phase.
 
-        Args:
-            new_phase_id (int): The ID of the new phase.
-            card_id (int): The ID of the card to move.
+            Args:
+                new_phase_id (int): The ID of the new phase.
+                card_id (int): The ID of the card to move.
 
-        Returns:
-            dict: The response from the API.
+            Returns:
+                dict: The response from the API.
         """
         mutation = self.mutations.mutation_move_card_to_phase(card_id=card_id, phase_id=new_phase_id)
         response = self.request(mutation)
@@ -139,19 +135,20 @@ class PipefySDK(BaseService):
         """
         query = self.queries.get_attachments_from_card(card_id)
         response = self.request(query)
-        return response.get("data", {}).get("card", {}).get("attachments", [])
+        return response.get("data", {}).get("card", {}).get("attachments", {})
 
-    def set_assignee_in_card(self, card_id: int, assignee_ids: List[int]) -> dict:
+    def set_assignee_in_card(self, card_id: int, assignee_ids: list) -> dict:
         """
-        Set assignees in a card.
+        Search users in a pipe.
 
         Args:
             card_id (int): The ID of the card.
-            assignee_ids (List[int]): The list of assignee IDs.
+            assignee_ids (list): The list of assignee IDs.
 
         Returns:
             dict: The response from the API.
         """
-        mutation = self.mutations.update_card_assignee(card_id, assignee_ids)
-        response = self.request(mutation)
+        query = self.mutations.update_card_assignee(card_id, assignee_ids)
+        response = self.request(query)
         return response.get("data", {}).get("pipe", {}).get("users", {})
+
