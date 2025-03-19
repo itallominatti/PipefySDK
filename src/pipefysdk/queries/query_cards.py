@@ -1,6 +1,16 @@
 class GraphQLQueries:
     @staticmethod
     def search_fields_in_card(card_id: int) -> str:
+        """
+        Search fields in a card.
+
+        Args:
+            card_id (int): ID of the card
+
+        Returns:
+            str: GraphQL query string
+
+        """
         query = f"""
         {{
           card(id: "{card_id}") {{
@@ -60,4 +70,32 @@ class GraphQLQueries:
             }}
           }}
         }}"""
+        return query
+
+    @staticmethod
+    def get_attachments_from_card(card_id: int) -> str:
+        """
+        Get attachments from a card.
+
+        Args:
+            card_id (int): ID of the card
+
+        Returns:
+            str: GraphQL query string
+        """
+        query = f"""
+            {{
+              card(id: "{card_id}") {{
+                id
+                attachments {{
+                    field {{
+                        id
+                        index_name
+                    }}
+                    path
+                    url
+                }}
+              }}
+            }}
+            """
         return query

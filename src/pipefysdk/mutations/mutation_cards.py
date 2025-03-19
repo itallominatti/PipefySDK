@@ -1,9 +1,10 @@
 import json
+from typing import List, Optional, Dict
 
 class GraphQLMutations:
 
     @staticmethod
-    def mutation_move_card_to_phase(card_id, phase_id) -> str:
+    def mutation_move_card_to_phase(card_id: str, phase_id: str) -> str:
         """Generate a GraphQL mutation to move a card to a new phase.
 
         Args:
@@ -33,14 +34,14 @@ class GraphQLMutations:
         return mutation
 
     @staticmethod
-    def mutation_update_card_field(card_id, field_id=None, new_value=None, fields: [] = []) -> str:
+    def mutation_update_card_field(card_id: str, field_id: Optional[str] = None, new_value: Optional[str] = None, fields: Optional[List[Dict[str, str]]] = None) -> str:
         """Generate a GraphQL mutation to update a card field.
 
         Args:
             card_id (str): The ID of the card to update.
-            field_id (str): The ID of the field to update.
-            new_value (str): The new value for the field.
-            fields (list): A list of fields to update.
+            field_id (Optional[str]): The ID of the field to update.
+            new_value (Optional[str]): The new value for the field.
+            fields (Optional[List[Dict[str, str]]]): A list of fields to update.
 
         Returns:
             str: The GraphQL mutation string.
@@ -72,4 +73,49 @@ class GraphQLMutations:
           }}
         }}
         '''
+        return mutation
+
+    @staticmethod
+    def update_card_assignee(card_id: int, assignee_ids: list) -> str:
+        """
+        Update the assignee of a card.
+
+        Args:
+            card_id (int): ID of the card
+            assignee_ids (list): List of assignee IDs
+
+        Returns:
+            str: GraphQL mutation string
+        """
+        assignee_ids_str = ', '.join(f'"{id}"' for id in assignee_ids)
+        mutation = f"""
+            mutation {{
+              updateCard(input: {{
+                id: "{card_id}",
+                assignee_ids: [{assignee_ids_str}]
+              }}) {{
+                card {{
+                  id
+                  title
+                }}
+              }}
+            }}
+            """
+        return mutation
+
+    @staticmethod
+    def mutation_create_pre_assigned_url(self,organization_id, filename):
+        mutation = """
+                    mutation{
+                        createPresignedUrl(
+                            input: { 
+                                organizationId: %(organizationId)s, 
+                                fileName: %(fileName)s 
+                            }){ url
+                        }
+                    }
+                """ % {
+            "organizationId": json.dumps(organization_id),
+            "fileName": json.dumps(filename),
+        }
         return mutation

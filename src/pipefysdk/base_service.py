@@ -1,6 +1,7 @@
 import logging
 from src.pipefysdk.queries.query_cards import GraphQLQueries
 from src.pipefysdk.http_client import HttpClient
+from src.pipefysdk.mutations.mutation_cards import GraphQLMutations
 
 class BaseService:
     """
@@ -17,10 +18,11 @@ class BaseService:
             'Content-Type': 'application/json'
         }
         self.queries = GraphQLQueries()
+        self.mutations = GraphQLMutations()
         self.logger = logging.getLogger(__name__)
         self.http_client = HttpClient(url, self.headers)
 
-    async def request(self, query: str) -> dict:
+    def request(self, query: str) -> dict:
         """
         Make a request to the API.
 
@@ -28,4 +30,6 @@ class BaseService:
 
         return: Return the response of the API.
         """
-        return await self.http_client.post(query)
+        self.logger.debug(f"Request headers: {self.headers}")
+        self.logger.debug(f"Request query: {query}")
+        return self.http_client.post(query)

@@ -1,8 +1,6 @@
-import asyncio
 import logging
+import time
 import httpx
-from pydantic import ValidationError
-from src.pipefysdk.models.request_model import RequestModel
 from src.pipefysdk.errors.http_request_pipefy_error import HttpRequestPipefyError
 
 class HttpClient:
@@ -14,38 +12,33 @@ class HttpClient:
         self.retry_delay = retry_delay
         self.logger = logging.getLogger(__name__)
 
-    async def post(self, query: str) -> dict:
-        try:
-            request_data = RequestModel(query=query)
-        except ValidationError as e:
-            self.logger.error(f"Validation error: {e}")
-            raise
-
+    def post(self, query: str) -> dict:
         attempt = 0
         while attempt < self.max_attempts:
             try:
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
+                with httpx.Client() as client:
+                    response = client.post(
                         self.url,
                         headers=self.headers,
-                        json=request_data.model_dump_json(),
+                        json={"query": query},
                         timeout=self.timeout_connection
                     )
                     response.raise_for_status()
                     return response.json()
             except httpx.HTTPStatusError as e:
                 self.logger.error(f"HTTP error occurred: {e}")
-                if e.response.status_code == 429:
+                if e.response.status_code == 401:
+                    raise HttpRequestPipefyError(
+                        message="Unauthorized. For more information, visit: https://developers.pipefy.com/reference/status-and-error-handling")
+                elif e.response.status_code == 429:
                     self.logger.info(f"Throttling detected. Retrying in {self.retry_delay} seconds...")
-                    await asyncio.sleep(self.retry_delay)
+                    time.sleep(self.retry_delay)
                     attempt += 1
                 else:
                     raise
             except httpx.RequestError as e:
                 self.logger.error(f"Request error occurred: {e}")
-                await asyncio.sleep(self.retry_delay)
+                time.sleep(self.retry_delay)
                 attempt += 1
         raise HttpRequestPipefyError(
-            message="Max attempts reached. For more information, visit: https://developers.pipefy.com/reference/status-and-error-handling",
-            status_code=500
-        )
+            message="Max attempts reached. For more information, visit: https://developers.pipefy.com/reference/status-and-error-handling")
