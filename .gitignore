@@ -5,21 +5,76 @@
 __pycache__/
 *.env
 .env
+*.egg
+*.egg-info/
+dist/
+build/
+*.manifest
+*.spec
 
 # Virtual environments
 .venv/
 env/
 venv/
+pip-wheel-metadata/
+*.virtualenv
+*.venv/
+*/.venv/
+*/env/
+*/venv/
 
 # Poetry
 poetry.lock
+*.toml~
 
 # VSCode
 .vscode/
+*.code-workspace
 
 # Logs
 *.log
+*.out
+*.err
 
 # OS generated files
 .DS_Store
 Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# IDEs and editors
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Coverage reports
+htmlcov/
+.coverage
+*.cover
+*.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.coveragerc
+
+# Testing
+.tox/
+.pytest_cache/
+.cache/
+*.pytest_cache
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.orig
+*.~lock.*
