@@ -103,6 +103,40 @@ response = pipefy_sdk.set_assignee_in_card(card_id=12345, assignee_ids=assignee_
 print(response)
 ```
 
+### Upload Attachment to a Card
+
+Upload an attachment to a specific card.
+
+```python
+card_id = 12345
+field_id = "field_id"
+file_base64 = "base64_encoded_file"
+file_name = "file_name.png"
+organization_id = 67890
+
+response = pipefy_sdk.upload_attachment_to_card(card_id=card_id, field_id=field_id, file_base64=file_base64, file_name=file_name, organization_id=organization_id)
+print(response)
+```
+
+### Send Email
+
+Send an email to a specific user.
+
+```python
+card_id = 12345
+from_email = "teste@gmail.com"
+repo_id = 67890
+subject = "Teste"
+text = "Teste"
+to_email = "teste2@gmail.com
+
+response = pipefy_sdk.send_email(card_id=card_id, from_email=from_email, repo_id=repo_id, subject=subject, text=text, to_email=to_email)
+print(response)
+```
+
+
+
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.

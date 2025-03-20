@@ -197,6 +197,21 @@ class PipefySDK(BaseService):
         return attach_response
 
     def send_email(self, card_id: int, repo_id: int, from_email: str, subject: str, text: str, to_email: str) -> dict:
+        """
+        Send an email to a card.
+
+        Args:
+            card_id (int): The ID of the card.
+            repo_id (int): The ID of the repository.
+            from_email (str): The sender's email address.
+            subject (str): The subject of the email.
+            text (str): The text content of the email.
+            to_email (str): The recipient's email address.
+
+        Returns:
+            dict: The response from the API.
+
+        """
         mutation_create_email = self.mutations.mutation_create_inbox_email(card_id, repo_id, from_email, subject, text,
                                                                            to_email)
         response_create_email = self.request(mutation_create_email)
