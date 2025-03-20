@@ -99,3 +99,27 @@ class GraphQLQueries:
             }}
             """
         return query
+
+    @staticmethod
+    def get_organization_users(organization_id: int) -> str:
+        """
+        Get users from an organization.
+
+        Args:
+            organization_id (int): ID of the organization
+
+        Returns:
+            str: GraphQL query string
+        """
+        query = f"""
+           {{
+             organization(id: {organization_id}) {{
+               users {{
+                 email
+                 username
+                 id
+               }}
+             }}
+           }}
+           """
+        return query

@@ -1,6 +1,8 @@
 import json
 from typing import List, Optional, Dict
 
+from src.pipefysdk.models.models import FieldAttribute
+
 class GraphQLMutations:
 
     @staticmethod
@@ -173,6 +175,89 @@ class GraphQLMutations:
              }}) {{
                clientMutationId
                success
+             }}
+           }}
+           '''
+        return mutation
+
+    @staticmethod
+    def mutation_create_inbox_email_with_attachment(card_id: int, repo_id: int, from_email: str, subject: str,
+                                                    text: str, to_email: str, file_url: str, file_name: str) -> str:
+        """Generate a GraphQL mutation to create an inbox email with an attachment.
+
+        Args:
+            card_id (int): The ID of the card.
+            repo_id (int): The ID of the repository.
+            from_email (str): The sender's email address.
+            subject (str): The subject of the email.
+            text (str): The text content of the email.
+            to_email (str): The recipient's email address.
+            file_url (str): The URL of the file.
+            file_name (str): The name of the file.
+
+        Returns:
+            str: The GraphQL mutation string.
+        """
+        mutation = f'''
+           mutation {{
+             createInboxEmail(input: {{
+               card_id: {json.dumps(card_id)},
+               repo_id: {json.dumps(repo_id)},
+               from: {json.dumps(from_email)},
+               subject: {json.dumps(subject)},
+               text: {json.dumps(text)},
+               to: {json.dumps(to_email)},
+               emailAttachments: [{{
+                 fileUrl: {json.dumps(file_url)},
+                 fileName: {json.dumps(file_name)}
+               }}]
+             }}) {{
+               inbox_email {{
+                 id
+                 state
+               }}
+             }}
+           }}
+           '''
+        return mutation
+
+    @staticmethod
+    def mutation_create_card(pipe_id: int, fields_attributes: List[FieldAttribute]) -> str:
+        mutation = f"""       
+                mutation {{           
+                createCard(input: {{               
+                    pipe_id: {pipe_id},               
+                       fields_attributes: [                    
+                              {', '.join([f'{{field_id: "{field.field_id}", field_value: "{field.field_value}"}}'
+                                          for field in fields_attributes])}      
+                      ]            }}) 
+                      {{                
+                           clientMutationId
+                                    card {{
+                                id                
+                }}            
+            }}        
+            }}        
+            """
+        return mutation
+
+    @staticmethod
+    def mutation_delete_card(card_id: int) -> str:
+        """Generate a GraphQL mutation to delete a card.
+
+        Args:
+            card_id (int): The ID of the card.
+
+        Returns:
+            str: The GraphQL mutation string.
+        """
+        mutation = f'''
+           mutation {{
+             deleteCard(input: {{
+               card_id: {json.dumps(card_id)}
+             }}) {{
+               success
+               clientMutationId
              }}
            }}
            '''

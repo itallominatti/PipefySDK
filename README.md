@@ -3,12 +3,27 @@
 
 PipefySDK is a Python SDK for interacting with the Pipefy API. It provides a set of methods to manage cards, fields, attachments, and more.
 
+## Features
+
+- Retrieve card information
+- Update single or multiple card fields
+- Search values in card fields
+- Move cards to different phases
+- Manage card attachments
+- Set assignees for cards
+- Send emails with or without attachments
+
 ## Installation
 
 You can install the package using `pip` or `poetry`:
 
 ```sh
 pip install pipefysdk
+```
+
+or
+
+```sh
 poetry add pipefysdk
 ```
 
@@ -103,7 +118,7 @@ response = pipefy_sdk.set_assignee_in_card(card_id=12345, assignee_ids=assignee_
 print(response)
 ```
 
-### Upload Attachment to a Card
+#### Upload Attachment to a Card
 
 Upload an attachment to a specific card.
 
@@ -118,7 +133,7 @@ response = pipefy_sdk.upload_attachment_to_card(card_id=card_id, field_id=field_
 print(response)
 ```
 
-### Send Email
+#### Send Email
 
 Send an email to a specific user.
 
@@ -128,14 +143,11 @@ from_email = "teste@gmail.com"
 repo_id = 67890
 subject = "Teste"
 text = "Teste"
-to_email = "teste2@gmail.com
+to_email = "teste2@gmail.com"
 
 response = pipefy_sdk.send_email(card_id=card_id, from_email=from_email, repo_id=repo_id, subject=subject, text=text, to_email=to_email)
 print(response)
 ```
-
-
-
 
 ## Contributing
 
@@ -145,3 +157,5 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 This project is licensed under the MIT License.
 ```
+
+This version of the `README.md` file is structured to provide clear and concise information about the project, its features, installation instructions, usage examples, and contribution guidelines, following the style of a PyPI project description.
