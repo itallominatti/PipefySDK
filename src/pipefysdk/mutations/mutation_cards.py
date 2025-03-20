@@ -104,18 +104,76 @@ class GraphQLMutations:
         return mutation
 
     @staticmethod
-    def mutation_create_pre_assigned_url(self,organization_id, filename):
+    def mutation_create_pre_assigned_url(organization_id: int, filename: str) -> str:
+        """Generate a GraphQL mutation to create a pre-signed URL."""
         mutation = """
-                    mutation{
-                        createPresignedUrl(
-                            input: { 
-                                organizationId: %(organizationId)s, 
-                                fileName: %(fileName)s 
-                            }){ url
-                        }
-                    }
-                """ % {
+            mutation {
+              createPresignedUrl(
+                input: { 
+                  organizationId: %(organizationId)s, 
+                  fileName: %(fileName)s 
+                }) { url
+              }
+            }
+            """ % {
             "organizationId": json.dumps(organization_id),
             "fileName": json.dumps(filename),
         }
+        return mutation
+
+    @staticmethod
+    def mutation_create_inbox_email(card_id: int, repo_id: int, from_email: str, subject: str, text: str,
+                                    to_email: str) -> str:
+        """Generate a GraphQL mutation to create an inbox email.
+
+        Args:
+            card_id (int): The ID of the card.
+            repo_id (int): The ID of the repository.
+            from_email (str): The sender's email address.
+            subject (str): The subject of the email.
+            text (str): The text content of the email.
+            to_email (str): The recipient's email address.
+
+        Returns:
+            str: The GraphQL mutation string.
+        """
+        mutation = f'''
+           mutation {{
+             createInboxEmail(input: {{
+               card_id: {json.dumps(card_id)},
+               repo_id: {json.dumps(repo_id)},
+               from: {json.dumps(from_email)},
+               subject: {json.dumps(subject)},
+               text: {json.dumps(text)},
+               to: {json.dumps(to_email)}
+             }}) {{
+               inbox_email {{
+                 id
+                 state
+               }}
+             }}
+           }}
+           '''
+        return mutation
+
+    @staticmethod
+    def mutation_send_inbox_email(email_id: str) -> str:
+        """Generate a GraphQL mutation to send an inbox email.
+
+        Args:
+            email_id (str): The ID of the inbox email.
+
+        Returns:
+            str: The GraphQL mutation string.
+        """
+        mutation = f'''
+           mutation {{
+             sendInboxEmail(input: {{
+               id: {json.dumps(email_id)}
+             }}) {{
+               clientMutationId
+               success
+             }}
+           }}
+           '''
         return mutation

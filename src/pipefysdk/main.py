@@ -1,10 +1,15 @@
 from typing import Optional
+import base64
+import binascii
+
+import httpx
 
 from src.pipefysdk.base_service import BaseService
 from src.pipefysdk.queries.query_cards import GraphQLQueries
 from src.pipefysdk.utils.binary_tree import BinarySearchTree
 from src.pipefysdk.errors.card_move_pipefy_error import CardMovePipefyError
 from src.pipefysdk.errors.search_field_pipefy_error import SearchFieldPipefyError
+from src.pipefysdk.errors.permission_error import PermissionError
 
 
 class PipefySDK(BaseService):
@@ -135,7 +140,7 @@ class PipefySDK(BaseService):
         """
         query = self.queries.get_attachments_from_card(card_id)
         response = self.request(query)
-        return response.get("data", {}).get("card", {}).get("attachments", {})
+        return response.get("data", {}).get("card", {}).get("attachments", [])
 
     def set_assignee_in_card(self, card_id: int, assignee_ids: list) -> dict:
         """
@@ -151,4 +156,60 @@ class PipefySDK(BaseService):
         query = self.mutations.update_card_assignee(card_id, assignee_ids)
         response = self.request(query)
         return response.get("data", {}).get("pipe", {}).get("users", {})
+
+    def upload_and_attach_file(self, card_id: int, field_id: str, file_base64: str, file_name: str,
+                               organization_id: int) -> dict:
+        """
+        Upload a base64 file and attach it to a card.
+
+        Args:
+            card_id (int): The ID of the card.
+            field_id (str): The ID of the field to attach the file to.
+            file_base64 (str): The base64 encoded file content.
+            file_name (str): The name of the file.
+            organization_id (int): The ID of the organization.
+
+        Returns:
+            dict: The response from the API.
+        """
+        # Check if the file_base64 is valid
+        try:
+            file_bytes = base64.b64decode(file_base64)
+        except binascii.Error:
+            raise ValueError("Invalid base64 file content")
+
+        # Step 1: Generate pre-signed URL
+        mutation = self.mutations.mutation_create_pre_assigned_url(organization_id, file_name)
+        response = self.request(mutation)
+
+        if 'errors' in response:
+            raise PermissionError("You need to be on the enterprise plan to use this feature")
+
+        presigned_url = response['data']['createPresignedUrl']['url']
+
+        upload_response = httpx.put(presigned_url, content=file_bytes, headers={'Content-Type': 'application/pdf'})
+        upload_response.raise_for_status()
+
+        path_to_send = presigned_url.split('.com/')[1].split('?')[0]
+
+        mutation = self.mutations.mutation_update_card_field(card_id, field_id, path_to_send)
+        attach_response = self.request(mutation)
+        return attach_response
+
+    def send_email(self, card_id: int, repo_id: int, from_email: str, subject: str, text: str, to_email: str) -> dict:
+        mutation_create_email = self.mutations.mutation_create_inbox_email(card_id, repo_id, from_email, subject, text,
+                                                                           to_email)
+        response_create_email = self.request(mutation_create_email)
+
+        if 'errors' in response_create_email:
+            raise RuntimeError(f"Failed to create inbox email: {response_create_email['errors']}")
+
+        email_id = response_create_email['data']['createInboxEmail']['inbox_email']['id']
+        mutation_send_email = self.mutations.mutation_send_inbox_email(email_id)
+        response_send_email = self.request(mutation_send_email)
+
+        return response_send_email
+
+
+
 
