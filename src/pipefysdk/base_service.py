@@ -1,7 +1,7 @@
 import logging
-from src.pipefysdk.queries.query_cards import GraphQLQueries
-from src.pipefysdk.http_client import HttpClient
-from src.pipefysdk.mutations.mutation_cards import GraphQLMutations
+from pipefysdk.queries.query_cards import GraphQLQueries
+from pipefysdk.http_client import HttpClient
+from pipefysdk.mutations.mutation_cards import GraphQLMutations
 
 class BaseService:
     """

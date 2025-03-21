@@ -1,14 +1,14 @@
 from typing import Optional
 
-from ..pipefysdk.base_service import BaseService
-from ..pipefysdk.utils.constraints import DEFAULT_BASE64, DEFAULT_NAME
-from ..pipefysdk.models.models import FieldAttribute
-from ..pipefysdk.services.card_service import CardService
-from ..pipefysdk.services.phase_service import PhaseService
-from ..pipefysdk.services.report_service import ReportService
-from ..pipefysdk.services.attachment_service import AttachmentService
-from ..pipefysdk.services.email_service import EmailService
-from ..pipefysdk.services.organization_service import OrganizationService
+from pipefysdk.base_service import BaseService
+from pipefysdk.utils.constraints import DEFAULT_BASE64, DEFAULT_NAME
+from pipefysdk.models.models import FieldAttribute
+from pipefysdk.services.card_service import CardService
+from pipefysdk.services.phase_service import PhaseService
+from pipefysdk.services.report_service import ReportService
+from pipefysdk.services.attachment_service import AttachmentService
+from pipefysdk.services.email_service import EmailService
+from pipefysdk.services.organization_service import OrganizationService
 
 
 class PipefySDK(BaseService):

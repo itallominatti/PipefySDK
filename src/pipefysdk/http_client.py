@@ -1,7 +1,7 @@
 import logging
 import time
 import httpx
-from src.pipefysdk.errors.http_request_pipefy_error import HttpRequestPipefyError
+from pipefysdk.errors.http_request_pipefy_error import HttpRequestPipefyError
 
 class HttpClient:
     def __init__(self, url: str, headers: dict, timeout_connection: int = 10, max_attempts: int = 5, retry_delay: int = 2) -> None:
