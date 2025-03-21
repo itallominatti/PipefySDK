@@ -11,15 +11,23 @@ from src.pipefysdk.utils.constraints import DEFAULT_BASE64,DEFAULT_NAME
 
 from src.pipefysdk.models.models import FieldAttribute
 
-from src.pipefysdk.errors.card_move_pipefy_error import CardMovePipefyError
-from src.pipefysdk.errors.search_field_pipefy_error import SearchFieldPipefyError
-from src.pipefysdk.errors.permission_error import PermissionError
-from src.pipefysdk.errors.card_create_pipefy_error import CardCreatePipefyError
+from src.pipefysdk.services.card_service import CardService
+from src.pipefysdk.services.phase_service import PhaseService
+from src.pipefysdk.services.report_service import ReportService
+from src.pipefysdk.services.attachment_service import AttachmentService
+from src.pipefysdk.services.email_service import EmailService
+from src.pipefysdk.services.organization_service import OrganizationService
 
 
 class PipefySDK(BaseService):
     def __init__(self, token: str, url: str) -> None:
         super().__init__(pipefy_token=token, url=url)
+        self.card_service = CardService(self.request,self.queries,self.mutations)
+        self.phase_service = PhaseService(self.request,self.queries,self.mutations)
+        self.report_service = ReportService(self.request,self.queries,self.mutations)
+        self.attachment_service = AttachmentService(self.request,self.queries,self.mutations)
+        self.email_service = EmailService(self.request,self.queries,self.mutations)
+        self.organization_service = OrganizationService(self.request,self.queries,self.mutations)
 
     def request(self, query: str) -> dict:
         """
@@ -40,9 +48,7 @@ class PipefySDK(BaseService):
 
         return: Return the card information.
         """
-        query = self.queries.search_fields_in_card(card_id=card_id)
-        response = self.request(query)
-        return response.get("data").get("card")
+        return self.card_service.get_card_info(card_id)
 
     def update_single_card_field(self, card_id: str, field_id: str, new_value: str) -> dict:
         """
@@ -55,8 +61,7 @@ class PipefySDK(BaseService):
 
         return: Return the response of the API.
         """
-        mutation = self.mutations.mutation_update_card_field(card_id, field_id, new_value)
-        return self.request(mutation).get("data", {}).get("updateFieldsValues", {})
+        return self.card_service.update_single_card_field(card_id, field_id, new_value)
 
     def update_multiple_card_fields(self, card_id: str, fields: list) -> dict:
         """
@@ -68,8 +73,7 @@ class PipefySDK(BaseService):
 
         return: Return the response of the API.
         """
-        mutation = self.mutations.mutation_update_card_field(card_id, fields=fields)
-        return self.request(mutation).get("data", {}).get("updateFieldsValues", {})
+        return self.card_service.update_multiple_card_fields(card_id, fields)
 
     def search_value_in_field(self, card_id: int, field_id: str) -> Optional[str]:
         """
@@ -81,20 +85,7 @@ class PipefySDK(BaseService):
 
         return: Return the value of the field or None if not found.
         """
-        query = self.queries.search_fields_in_card(card_id)
-        response = self.request(query)
-        try:
-            fields = response.get("data", {}).get("card", {}).get("fields", [])
-        except:
-            raise SearchFieldPipefyError("Field not found")
-        bst = BinarySearchTree()
-        for field in fields:
-            field_key = field.get("field", {}).get("id")
-            field_value = field.get("value")
-            bst.insert(field_key, field_value)
-
-        result_node = bst.search(field_id)
-        return result_node.value if result_node else None
+        return self.card_service.search_value_in_field(card_id, field_id)
 
     def search_multiple_values_in_fields(self, card_id: int, field_ids: list) -> dict:
         """
@@ -106,24 +97,7 @@ class PipefySDK(BaseService):
 
         return: Return the values of the fields.
         """
-        query = self.queries.search_fields_in_card(card_id)
-        response = self.request(query)
-        try:
-            fields = response.get("data", {}).get("card", {}).get("fields", [])
-        except:
-            raise SearchFieldPipefyError("Field not found")
-
-        bst = BinarySearchTree()
-        for field in fields:
-            field_key = field.get("field", {}).get("id")
-            field_value = field.get("value")
-            bst.insert(field_key, field_value)
-
-        result = {}
-        for field_id in field_ids:
-            result_node = bst.search(field_id)
-            result[field_id] = result_node.value if result_node else None
-        return result
+        return self.card_service.search_multiple_values_in_fields(card_id, field_ids)
 
     def move_card_to_phase(self, new_phase_id: int, card_id: int) -> dict:
         """
@@ -136,11 +110,7 @@ class PipefySDK(BaseService):
             Returns:
                 dict: The response from the API.
         """
-        mutation = self.mutations.mutation_move_card_to_phase(card_id=card_id, phase_id=new_phase_id)
-        response = self.request(mutation)
-        if 'errors' in response:
-            raise CardMovePipefyError(f"{response['errors']}. Probably, you have required fields empty in your card.")
-        return response
+        return self.phase_service.move_card_to_phase(new_phase_id, card_id)
 
     def get_attachments_from_card(self, card_id: int) -> list:
         """
@@ -152,9 +122,7 @@ class PipefySDK(BaseService):
         Returns:
             list: The response from the API.
         """
-        query = self.queries.get_attachments_from_card(card_id)
-        response = self.request(query)
-        return response.get("data", {}).get("card", {}).get("attachments", [])
+        return self.card_service.get_attachments_from_card(card_id)
 
     def set_assignee_in_card(self, card_id: int, assignee_ids: list) -> dict:
         """
@@ -167,9 +135,8 @@ class PipefySDK(BaseService):
         Returns:
             dict: The response from the API.
         """
-        query = self.mutations.update_card_assignee(card_id, assignee_ids)
-        response = self.request(query)
-        return response.get("data", {}).get("pipe", {}).get("users", {})
+        return self.card_service.set_assignee_in_card(card_id, assignee_ids)
+
 
     def upload_and_attach_file(self, card_id: int, organization_id: int, field_id: str,
         file_base64: str = DEFAULT_BASE64, file_name: str = DEFAULT_NAME) -> dict:
@@ -186,29 +153,7 @@ class PipefySDK(BaseService):
         Returns:
             dict: The response from the API.
         """
-        # Check if the file_base64 is valid
-        try:
-            file_bytes = base64.b64decode(file_base64)
-        except binascii.Error:
-            raise ValueError("Invalid base64 file content")
-
-        # Step 1: Generate pre-signed URL
-        mutation = self.mutations.mutation_create_pre_assigned_url(organization_id, file_name)
-        response = self.request(mutation)
-
-        if 'errors' in response:
-            raise PermissionError("You need to be on the enterprise plan to use this feature")
-
-        presigned_url = response['data']['createPresignedUrl']['url']
-
-        upload_response = httpx.put(presigned_url, content=file_bytes, headers={'Content-Type': 'application/pdf'})
-        upload_response.raise_for_status()
-
-        path_to_send = presigned_url.split('.com/')[1].split('?')[0]
-
-        mutation = self.mutations.mutation_update_card_field(card_id, field_id, path_to_send)
-        attach_response = self.request(mutation)
-        return attach_response
+        return self.attachment_service.upload_and_attach_file(card_id, organization_id, field_id, file_base64, file_name)
 
     def send_email(self, card_id: int, repo_id: int, from_email: str, subject: str, text: str, to_email: str) -> dict:
         """
@@ -226,18 +171,7 @@ class PipefySDK(BaseService):
             dict: The response from the API.
 
         """
-        mutation_create_email = self.mutations.mutation_create_inbox_email(card_id, repo_id, from_email, subject, text,
-                                                                           to_email)
-        response_create_email = self.request(mutation_create_email)
-
-        if 'errors' in response_create_email:
-            raise RuntimeError(f"Failed to create inbox email: {response_create_email['errors']}")
-
-        email_id = response_create_email['data']['createInboxEmail']['inbox_email']['id']
-        mutation_send_email = self.mutations.mutation_send_inbox_email(email_id)
-        response_send_email = self.request(mutation_send_email)
-
-        return response_send_email
+        return self.email_service.send_email(card_id, repo_id, from_email, subject, text, to_email)
 
     def send_email_with_attachment(self, card_id: int, repo_id: int, from_email: str,
         subject: str, text: str, organization_id: int,to_email: str, file_base64: str = DEFAULT_BASE64, file_name: str = DEFAULT_NAME) -> dict:
@@ -258,40 +192,8 @@ class PipefySDK(BaseService):
         Returns:
             dict: The response from the API.
         """
-        # Check if the file_base64 is valid
-        try:
-            file_bytes = base64.b64decode(file_base64)
-        except binascii.Error:
-            raise ValueError("Invalid base64 file content")
-
-        # Step 1: Generate pre-signed URL
-        mutation = self.mutations.mutation_create_pre_assigned_url(organization_id, file_name)
-        response = self.request(mutation)
-
-        if 'errors' in response:
-            raise PermissionError("You need to be on the enterprise plan to use this feature")
-
-        presigned_url = response['data']['createPresignedUrl']['url']
-
-        # Step 2: Upload the file to the pre-signed URL
-        upload_response = httpx.put(presigned_url, content=file_bytes, headers={'Content-Type': 'application/pdf'})
-        upload_response.raise_for_status()
-        path_to_send = presigned_url.split('.com/')[1].split('?')[0]
-
-        # Step 3: Create the inbox email with the attachment
-        mutation_create_email = self.mutations.mutation_create_inbox_email_with_attachment(card_id, repo_id, from_email, subject, text, to_email, path_to_send, file_name)
-        response_create_email = self.request(mutation_create_email)
-
-        if 'errors' in response_create_email:
-            raise RuntimeError(f"Failed to create inbox email: {response_create_email['errors']}")
-
-        email_id = response_create_email['data']['createInboxEmail']['inbox_email']['id']
-
-        # Step 4: Send the email
-        mutation_send_email = self.mutations.mutation_send_inbox_email(email_id)
-        response_send_email = self.request(mutation_send_email)
-
-        return response_send_email
+        return self.email_service.send_email_with_attachment(card_id, repo_id,
+            from_email, subject, text, organization_id, to_email, file_base64, file_name)
 
     def get_users_from_organization(self, organization_id: int) -> list:
         """
@@ -303,11 +205,7 @@ class PipefySDK(BaseService):
         Returns:
             list: The response from the API.
         """
-        query = self.queries.get_organization_users(organization_id)
-        response = self.request(query)
-        if 'errors' in response:
-            raise PermissionError("Permission denied. you dont have access to this organization")
-        return response.get("data", {}).get("organization", {}).get("users", [])
+        return self.organization_service.get_users_from_organization(organization_id)
 
     def get_specific_user_from_organization(self, organization_id: int, email: str) -> dict:
         """
@@ -320,17 +218,8 @@ class PipefySDK(BaseService):
         Returns:
             dict: The response from the API.
         """
-        query = self.queries.get_organization_users(organization_id)
-        response = self.request(query)
-        try:
-            users = response.get("data", {}).get("organization", {}).get("users", [])
-        except:
-            raise SearchFieldPipefyError("Email not found")
-
-        for user in users:
-            if user.get("email") == email:
-                return user
-        return None
+        return self.organization_service.get_specific_user_from_organization(
+            organization_id, email)
 
     def create_card(self, pipe_id: int, fields: [FieldAttribute]) -> dict:
         """
@@ -343,11 +232,7 @@ class PipefySDK(BaseService):
         Returns:
             dict: The response from the API.
         """
-        mutation = self.mutations.mutation_create_card(pipe_id, fields)
-        response = self.request(mutation)
-        if 'errors' in response:
-            raise CardCreatePipefyError(f"Failed to create card: {response['errors']}")
-        return response
+        return self.card_service.create_card(pipe_id, fields)
 
     def delete_card(self, card_id: int) -> dict:
         """
@@ -359,9 +244,11 @@ class PipefySDK(BaseService):
         Returns:
             dict: The response from the API.
         """
-        mutation = self.mutations.mutation_delete_card(card_id)
-        response = self.request(mutation)
-        return response
+        return self.card_service.delete_card(card_id)
+
+
+
+
 
 
 

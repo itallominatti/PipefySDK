@@ -6,7 +6,7 @@ from src.pipefysdk.models.models import FieldAttribute
 class GraphQLMutations:
 
     @staticmethod
-    def mutation_move_card_to_phase(card_id: str, phase_id: str) -> str:
+    def mutation_move_card_to_phase(card_id: int, phase_id: int) -> str:
         """Generate a GraphQL mutation to move a card to a new phase.
 
         Args:
@@ -36,7 +36,7 @@ class GraphQLMutations:
         return mutation
 
     @staticmethod
-    def mutation_update_card_field(card_id: str, field_id: Optional[str] = None, new_value: Optional[str] = None, fields: Optional[List[Dict[str, str]]] = None) -> str:
+    def mutation_update_card_field(card_id: int, field_id: Optional[str] = None, new_value: Optional[str] = None, fields: Optional[List[Dict[str, str]]] = None) -> str:
         """Generate a GraphQL mutation to update a card field.
 
         Args:
@@ -262,3 +262,5 @@ class GraphQLMutations:
            }}
            '''
         return mutation
+
+
