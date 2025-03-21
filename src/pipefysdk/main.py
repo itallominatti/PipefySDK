@@ -1,12 +1,7 @@
-import base64
-import binascii
-
-import httpx
 from typing import Optional
 
 from src.pipefysdk.base_service import BaseService
 
-from src.pipefysdk.utils.binary_tree import BinarySearchTree
 from src.pipefysdk.utils.constraints import DEFAULT_BASE64,DEFAULT_NAME
 
 from src.pipefysdk.models.models import FieldAttribute
@@ -136,7 +131,6 @@ class PipefySDK(BaseService):
             dict: The response from the API.
         """
         return self.card_service.set_assignee_in_card(card_id, assignee_ids)
-
 
     def upload_and_attach_file(self, card_id: int, organization_id: int, field_id: str,
         file_base64: str = DEFAULT_BASE64, file_name: str = DEFAULT_NAME) -> dict:
