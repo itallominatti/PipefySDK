@@ -1,17 +1,14 @@
 from typing import Optional
 
-from src.pipefysdk.base_service import BaseService
-
-from src.pipefysdk.utils.constraints import DEFAULT_BASE64,DEFAULT_NAME
-
-from src.pipefysdk.models.models import FieldAttribute
-
-from src.pipefysdk.services.card_service import CardService
-from src.pipefysdk.services.phase_service import PhaseService
-from src.pipefysdk.services.report_service import ReportService
-from src.pipefysdk.services.attachment_service import AttachmentService
-from src.pipefysdk.services.email_service import EmailService
-from src.pipefysdk.services.organization_service import OrganizationService
+from ..pipefysdk.base_service import BaseService
+from ..pipefysdk.utils.constraints import DEFAULT_BASE64, DEFAULT_NAME
+from ..pipefysdk.models.models import FieldAttribute
+from ..pipefysdk.services.card_service import CardService
+from ..pipefysdk.services.phase_service import PhaseService
+from ..pipefysdk.services.report_service import ReportService
+from ..pipefysdk.services.attachment_service import AttachmentService
+from ..pipefysdk.services.email_service import EmailService
+from ..pipefysdk.services.organization_service import OrganizationService
 
 
 class PipefySDK(BaseService):
@@ -240,6 +237,8 @@ class PipefySDK(BaseService):
         """
         return self.card_service.delete_card(card_id)
 
+if __name__ == "__main__":
+    pipefy_sdk = PipefySDK(token="your_token", url="https://api.pipefy.com/graphql")
 
 
 

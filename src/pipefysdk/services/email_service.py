@@ -3,7 +3,7 @@ import binascii
 
 import httpx
 
-from src.pipefysdk.utils.constraints import DEFAULT_BASE64, DEFAULT_NAME
+from ..utils.constraints import DEFAULT_BASE64, DEFAULT_NAME
 
 class EmailService:
     def __init__(self, request_func, queries, mutations):

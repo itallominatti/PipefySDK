@@ -1,7 +1,7 @@
 import json
 from typing import List, Optional, Dict
 
-from src.pipefysdk.models.models import FieldAttribute
+from ..models.models import FieldAttribute
 
 class GraphQLMutations:
 

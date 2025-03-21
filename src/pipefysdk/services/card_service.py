@@ -1,11 +1,9 @@
 from typing import List, Optional
 
-from src.pipefysdk.models.models import FieldAttribute
-
-from src.pipefysdk.errors.card_create_pipefy_error import CardCreatePipefyError
-from src.pipefysdk.errors.search_field_pipefy_error import SearchFieldPipefyError
-
-from src.pipefysdk.utils.binary_tree import BinarySearchTree
+from ..models.models import FieldAttribute
+from ..errors.card_create_pipefy_error import CardCreatePipefyError
+from ..errors.search_field_pipefy_error import SearchFieldPipefyError
+from ..utils.binary_tree import BinarySearchTree
 
 class CardService:
     def __init__(self, request_func, queries, mutations):

@@ -2,7 +2,7 @@ import base64
 import binascii
 import httpx
 
-from src.pipefysdk.utils.constraints import DEFAULT_BASE64, DEFAULT_NAME
+from ..utils.constraints import DEFAULT_BASE64, DEFAULT_NAME
 
 class AttachmentService:
     def __init__(self, request_func, queries, mutations):

@@ -1,5 +1,4 @@
-
-from src.pipefysdk.errors.search_field_pipefy_error import SearchFieldPipefyError
+from ..errors.search_field_pipefy_error import SearchFieldPipefyError
 
 class OrganizationService:
     def __init__(self, request_func, queries, mutations):
@@ -15,7 +14,6 @@ class OrganizationService:
         return response.get("data", {}).get("organization", {}).get("users", [])
 
     def get_specific_user_from_organization(self, organization_id: int, email: str) -> dict:
-
         query = self._queries.get_organization_users(organization_id)
         response = self._request(query)
         try:

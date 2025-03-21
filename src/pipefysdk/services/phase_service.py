@@ -1,5 +1,5 @@
 
-from src.pipefysdk.errors.card_move_pipefy_error import CardMovePipefyError
+from ..errors.card_move_pipefy_error import CardMovePipefyError
 
 class PhaseService:
     def __init__(self, request_func, queries, mutations):
