@@ -237,10 +237,6 @@ class PipefySDK(BaseService):
         """
         return self.card_service.delete_card(card_id)
 
-if __name__ == "__main__":
-    pipefy_sdk = PipefySDK(token="your_token", url="https://api.pipefy.com/graphql")
-
-
 
 
 
